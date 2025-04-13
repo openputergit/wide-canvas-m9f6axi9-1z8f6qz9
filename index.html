@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoTradeAI - Your Smart Investment Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        /* Glassmorphism styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .quiz-card {
+            transition: all 0.3s ease;
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 20px 0 rgba(31, 38, 135, 0.3);
+        }
+
+        .glass-table {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .glass-table th {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .glass-table tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading animation */
+        .loader {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Chat bubble */
+        .chat-bubble {
+            position: relative;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            max-width: 70%;
+        }
+
+        .user-bubble {
+            background: rgba(124, 58, 237, 0.6);
+            backdrop-filter: blur(5px);
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+
+        .ai-bubble {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="glass fixed top-0 left-0 right-0 p-4 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white">AutoTradeAI</h1>
+            <div class="space-x-2 md:space-x-4" id="nav-buttons">
+                <button onclick="showSection('landing')" class="glass-button px-3 py-2 text-sm md:text-base rounded-full">Home</button>
+                <button onclick="showSection('trading')" class="glass-button px-3 py-2 text-sm md:text-base rounded-full">Trading Dashboard</button>
+                <button onclick="showSection('learning')" class="glass-button px-3 py-2 text-sm md:text-base rounded-full">Learning Hub</button>
+                <button onclick="toggleAuth()" class="glass-button px-3 py-2 text-sm md:text-base rounded-full" id="authBtn">Sign In</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass p-8 w-11/12 max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="authTitle">Sign In</h2>
+                <button onclick="toggleAuth()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form id="authForm" class="space-y-4">
+                <div id="nameField" class="hidden">
+                    <input type="text" placeholder="Full Name" class="glass-input w-full p-3 rounded-lg">
+                </div>
+                <div>
+                    <input type="email" placeholder="Email" class="glass-input w-full p-3 rounded-lg">
+                </div>
+                <div>
+                    <input type="password" placeholder="Password" class="glass-input w-full p-3 rounded-lg">
+                </div>
+                <button type="submit" class="glass-button w-full py-3 rounded-lg font-medium">Continue</button>
+                <p class="text-center">
+                    <a href="#" onclick="toggleAuthMode()" id="authToggle" class="text-blue-300 hover:text-white">Create account</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Landing Page -->
+    <div id="landing-section" class="pt-24 pb-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Your Smart Investment Companion</h1>
+                    <p class="text-xl mb-8 opacity-90">AutoTradeAI analyzes market data in real-time and makes intelligent trade decisions so you don't have to.</p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button onclick="showSection('trading')" class="glass-button py-3 px-8 rounded-full text-lg font-medium">
+                            Start Trading
+                        </button>
+                        <button onclick="toggleInvestmentAssistant()" class="glass-button py-3 px-8 rounded-full text-lg font-medium">
+                            Get Investment Advice
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 glass p-6 rounded-lg">
+                    <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80" alt="Trading Visualization" class="rounded-lg w-full">
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="mt-24">
+                <h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-robot text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Smart Trade Engine</h3>
+                        <p>Advanced algorithms analyze market trends and execute optimal trades.</p>
+                    </div>
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-chat-left-text text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">User Input Assistant</h3>
+                        <p>Input an amount and get personalized investment suggestions with risk assessment.</p>
+                    </div>
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-graph-up text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Real-Time Dashboard</h3>
+                        <p>Visualize trade activity, portfolio performance, and market trends.</p>
+                    </div>
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-clock-history text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Backtesting Module</h3>
+                        <p>Simulate strategies on historical data to validate performance.</p>
+                    </div>
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-newspaper text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Sentiment Analysis</h3>
+                        <p>Utilize social and news data to enhance trading decisions.</p>
+                    </div>
+                    <div class="glass p-6 rounded-lg">
+                        <i class="bi bi-shield-check text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Risk Management</h3>
+                        <p>Built-in logic for stop-loss, diversification, and capital preservation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Assistant Modal -->
+    <div id="investmentAssistantModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass-dark p-6 w-11/12 max-w-3xl h-3/4 flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Investment Assistant</h2>
+                <button onclick="toggleInvestmentAssistant()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="flex-grow overflow-y-auto mb-4 p-4 glass">
+                <div id="chatContainer" class="space-y-4">
+                    <div class="ai-bubble chat-bubble">
+                        <p>Hello! I'm your AI investment assistant. How much would you like to invest today?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <input id="investmentInput" type="text" placeholder="Enter your message..." class="glass-input flex-grow p-3 rounded-lg">
+                <button onclick="sendInvestmentQuery()" class="glass-button p-3 rounded-lg">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Dashboard -->
+    <div id="trading-section" class="hidden pt-24 pb-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8">Trading Dashboard</h2>
+            
+            <!-- Portfolio Summary -->
+            <div class="glass mb-8 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-4">Portfolio Summary</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-dark p-4 rounded-lg">
+                        <p class="text-gray-300">Total Value</p>
+                        <p class="text-2xl font-bold" id="portfolioValue">$12,457.89</p>
+                        <p class="text-green-400" id="portfolioChange"><i class="bi bi-arrow-up"></i> 3.2% today</p>
+                    </div>
+                    <div class="glass-dark p-4 rounded-lg">
+                        <p class="text-gray-300">Profit/Loss</p>
+                        <p class="text-2xl font-bold" id="profitLoss">+$342.56</p>
+                        <p class="text-green-400" id="profitLossPercent">+2.8% all time</p>
+                    </div>
+                    <div class="glass-dark p-4 rounded-lg">
+                        <p class="text-gray-300">Active Positions</p>
+                        <p class="text-2xl font-bold" id="activePositionsCount">7</p>
+                        <p class="text-gray-300" id="marketsCount">Across 4 markets</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Charts and Trading Bot -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass p-6 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Market Overview</h3>
+                        <select class="glass-input p-2 rounded-lg" id="marketSelector" onchange="updateMarketChart()">
+                            <option value="btc">BTC/USD</option>
+                            <option value="eth">ETH/USD</option>
+                            <option value="sol">SOL/USD</option>
+                            <option value="aapl">AAPL</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" id="marketChart"></div>
+                </div>
+                <div class="glass p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Trading Bot Status</h3>
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center">
+                            <span>Status</span>
+                            <span class="px-3 py-1 rounded-full bg-green-500 bg-opacity-30 text-green-100" id="botStatus">
+                                Active <i class="bi bi-robot"></i>
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Current Strategy</span>
+                            <span id="currentStrategy">Momentum + Sentiment</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Current Position</span>
+                            <span id="currentPosition">Long BTC/USD</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Entry Price</span>
+                            <span id="entryPrice">$36,420.50</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Stop Loss</span>
+                            <span id="stopLoss">$35,700.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Take Profit</span>
+                            <span id="takeProfit">$38,500.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Daily P/L</span>
+                            <span class="text-green-400" id="dailyPL">+2.34%</span>
+                        </div>
+                        <button class="glass-button w-full py-2 rounded-lg" onclick="showStrategyModal()">
+                            Modify Strategy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Trades -->
+            <div class="glass p-6 rounded-lg mb-8">
+                <h3 class="text-xl font-bold mb-4">Recent Trades</h3>
+                <div class="overflow-x-auto">
+                    <table class="glass-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="py-3 px-4 text-left">Asset</th>
+                                <th class="py-3 px-4 text-left">Type</th>
+                                <th class="py-3 px-4 text-left">Entry Price</th>
+                                <th class="py-3 px-4 text-left">Exit Price</th>
+                                <th class="py-3 px-4 text-left">Profit/Loss</th>
+                                <th class="py-3 px-4 text-left">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentTradesList">
+                            <tr>
+                                <td class="py-3 px-4">BTC/USD</td>
+                                <td class="py-3 px-4">Long</td>
+                                <td class="py-3 px-4">$36,120.00</td>
+                                <td class="py-3 px-4">$36,420.50</td>
+                                <td class="py-3 px-4 text-green-400">+0.83%</td>
+                                <td class="py-3 px-4">2 hours ago</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4">ETH/USD</td>
+                                <td class="py-3 px-4">Short</td>
+                                <td class="py-3 px-4">$2,450.00</td>
+                                <td class="py-3 px-4">$2,390.00</td>
+                                <td class="py-3 px-4 text-green-400">+2.45%</td>
+                                <td class="py-3 px-4">5 hours ago</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4">AAPL</td>
+                                <td class="py-3 px-4">Long</td>
+                                <td class="py-3 px-4">$178.25</td>
+                                <td class="py-3 px-4">$177.80</td>
+                                <td class="py-3 px-4 text-red-400">-0.25%</td>
+                                <td class="py-3 px-4">1 day ago</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Backtesting Module -->
+            <div class="glass p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-4">Backtesting Module</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block mb-2">Asset</label>
+                        <select class="glass-input w-full p-2 rounded-lg" id="backtestAsset">
+                            <option>BTC/USD</option>
+                            <option>ETH/USD</option>
+                            <option>SOL/USD</option>
+                            <option>AAPL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Strategy</label>
+                        <select class="glass-input w-full p-2 rounded-lg" id="backtestStrategy">
+                            <option>Momentum</option>
+                            <option>Mean Reversion</option>
+                            <option>Sentiment-based</option>
+                            <option>Hybrid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Time Period</label>
+                        <select class="glass-input w-full p-2 rounded-lg" id="backtestTimePeriod">
+                            <option>1 Week</option>
+                            <option>1 Month</option>
+                            <option>3 Months</option>
+                            <option>6 Months</option>
+                            <option>1 Year</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="glass-button w-full py-3 rounded-lg mb-6" id="runBacktestBtn">Run Backtest</button>
+                <div id="backtestResults" class="hidden">
+                    <div class="mb-4 flex items-center justify-center" id="backtestLoading">
+                        <div class="loader mr-3"></div>
+                        <p>Running backtest simulation...</p>
+                    </div>
+                    <h4 class="text-lg font-semibold mb-3">Backtest Results</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass-dark p-3 rounded-lg">
+                            <p class="text-gray-300">Total Return</p>
+                            <p class="text-xl font-bold" id="backtestReturn">+18.7%</p>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <p class="text-gray-300">Win Rate</p>
+                            <p class="text-xl font-bold" id="backtestWinRate">68%</p>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <p class="text-gray-300">Max Drawdown</p>
+                            <p class="text-xl font-bold" id="backtestDrawdown">-7.2%</p>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <p class="text-gray-300">Sharpe Ratio</p>
+                            <p class="text-xl font-bold" id="backtestSharpe">2.1</p>
+                        </div>
+                    </div>
+                    <div class="chart-container mt-4" id="backtestChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Hub -->
+    <div id="learning-section" class="hidden pt-24 pb-12">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8 flex-col md:flex-row">
+                <h2 class="text-3xl font-bold mb-4 md:mb-0">Learning Hub</h2>
+                <div class="glass p-4 rounded-lg w-full md:w-auto">
+                    <div class="flex items-center flex-col md:flex-row">
+                        <div class="mr-0 md:mr-4 mb-2 md:mb-0">
+                            <p class="text-sm">Your Progress</p>
+                            <p class="text-xl font-bold">45%</p>
+                        </div>
+                        <div class="w-full md:w-48 h-3 bg-white bg-opacity-20 rounded-full">
+                            <div class="h-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div class="glass p-6 rounded-lg quiz-card">
+                    <div class="h-40 mb-4 overflow-hidden rounded-lg">
+                        <img src="https://images.unsplash.com/photo-1591696205602-2f950c417cb9?auto=format&fit=crop&q=80" alt="Trading Quiz" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Trading Quiz</h3>
+                    <p class="mb-4 text-gray-200">Test your knowledge of trading concepts and strategies.</p>
+                    <button onclick="startQuiz()" class="glass-button w-full py-3 rounded-lg">Start Quiz</button>
+                </div>
+                
+                <div class="glass p-6 rounded-lg quiz-card">
+                    <div class="h-40 mb-4 overflow-hidden rounded-lg">
+                        <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&q=80" alt="Market Puzzle" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Market Puzzle</h3>
+                    <p class="mb-4 text-gray-200">Solve puzzles that teach you to identify market patterns.</p>
+                    <button onclick="startPuzzle()" class="glass-button w-full py-3 rounded-lg">Start Puzzle</button>
+                </div>
+                
+                <div class="glass p-6 rounded-lg quiz-card">
+                    <div class="h-40 mb-4 overflow-hidden rounded-lg">
+                        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&q=80" alt="AI Trading Course" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">AI Trading Course</h3>
+                    <p class="mb-4 text-gray-200">Learn how AI and machine learning are changing trading.</p>
+                    <button onclick="startCourse()" class="glass-button w-full py-3 rounded-lg">Start Course</button>
+                </div>
+            </div>
+            
+            <div class="glass p-6 rounded-lg mb-8">
+                <h3 class="text-xl font-bold mb-6">Your Learning Path</h3>
+                <div class="relative">
+                    <div class="absolute left-6 top-0 bottom-0 w-1 bg-white bg-opacity-20"></div>
+                    
+                    <div class="flex mb-8 relative">
+                        <div class="w-12 h-12 rounded-full glass-dark flex items-center justify-center z-10">
+                            <i class="bi bi-check-lg text-green-400 text-xl"></i>
+                        </div>
+                        <div class="ml-6 glass-dark p-4 rounded-lg flex-1">
+                            <h4 class="font-semibold mb-2">Trading Fundamentals</h4>
+                            <p class="text-gray-300 mb-2">Learn the basic concepts and terminology of trading.</p>
+                            <div class="text-green-400 text-sm">Completed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex mb-8 relative">
+                        <div class="w-12 h-12 rounded-full glass-dark flex items-center justify-center z-10">
+                            <i class="bi bi-check-lg text-green-400 text-xl"></i>
+                        </div>
+                        <div class="ml-6 glass-dark p-4 rounded-lg flex-1">
+                            <h4 class="font-semibold mb-2">Technical Analysis</h4>
+                            <p class="text-gray-300 mb-2">Learn how to read charts and identify patterns.</p>
+                            <div class="text-green-400 text-sm">Completed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex mb-8 relative">
+                        <div class="w-12 h-12 rounded-full bg-purple-600 bg-opacity-60 flex items-center justify-center z-10">
+                            <i class="bi bi-play-fill text-xl"></i>
+                        </div>
+                        <div class="ml-6 glass-dark p-4 rounded-lg flex-1">
+                            <h4 class="font-semibold mb-2">Trading Strategies</h4>
+                            <p class="text-gray-300 mb-2">Learn different trading strategies and when to apply them.</p>
+                            <div class="text-purple-300 text-sm">In Progress - 60%</div>
+                            <div class="mt-2 w-full h-2 bg-white bg-opacity-20 rounded-full">
+                                <div class="h-2 bg-purple-600 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex mb-8 relative">
+                        <div class="w-12 h-12 rounded-full glass-dark flex items-center justify-center z-10">
+                            <i class="bi bi-lock-fill text-gray-400 text-xl"></i>
+                        </div>
+                        <div class="ml-6 glass-dark p-4 rounded-lg flex-1">
+                            <h4 class="font-semibold mb-2">Risk Management</h4>
+                            <p class="text-gray-300 mb-2">Learn how to protect your capital and manage risk.</p>
+                            <div class="text-gray-400 text-sm">Locked</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex relative">
+                        <div class="w-12 h-12 rounded-full glass-dark flex items-center justify-center z-10">
+                            <i class="bi bi-lock-fill text-gray-400 text-xl"></i>
+                        </div>
+                        <div class="ml-6 glass-dark p-4 rounded-lg flex-1">
+                            <h4 class="font-semibold mb-2">Advanced AI Trading</h4>
+                            <p class="text-gray-300 mb-2">Learn how to build and optimize your own AI trading systems.</p>
+                            <div class="text-gray-400 text-sm">Locked</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass p-8 w-11/12 max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Trading Quiz</h2>
+                <button onclick="closeQuiz()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div id="quizContent">
+                <h3 class="text-xl mb-4" id="quizQuestion">Question 1 of 5</h3>
+                <p class="text-lg mb-6" id="quizPrompt">What is a key advantage of using AI in trading?</p>
+                <div class="space-y-3" id="quizOptions">
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectQuizOption(0)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="quiz" class="mr-3" id="quizOption0">
+                            <span>Eliminating all trading risk</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectQuizOption(1)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="quiz" class="mr-3" id="quizOption1">
+                            <span>Processing large amounts of data quickly</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectQuizOption(2)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="quiz" class="mr-3" id="quizOption2">
+                            <span>Guaranteed profits on all trades</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectQuizOption(3)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="quiz" class="mr-3" id="quizOption3">
+                            <span>Bypassing market regulations</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="quizFeedback" class="hidden mt-4 p-4 rounded-lg"></div>
+                <div class="mt-8 flex justify-end">
+                    <button id="nextQuizBtn" class="glass-button px-6 py-2 rounded-lg" onclick="nextQuizQuestion()">Next Question</button>
+                </div>
+            </div>
+            <div id="quizResults" class="hidden text-center">
+                <i class="bi bi-trophy-fill text-5xl text-yellow-300 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Quiz Complete!</h3>
+                <p class="text-xl mb-4">Your Score: <span id="quizScore">0</span>/5</p>
+                <p class="mb-6" id="quizFeedbackFinal">Great job! You have a solid understanding of trading concepts.</p>
+                <button onclick="closeQuiz()" class="glass-button px-8 py-3 rounded-lg">Continue Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puzzle Modal -->
+    <div id="puzzleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass p-8 w-11/12 max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Market Pattern Puzzle</h2>
+                <button onclick="closePuzzle()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div id="puzzleContent">
+                <p class="mb-4">Identify the pattern in this chart and predict the next likely movement:</p>
+                <div class="chart-container mb-6" id="puzzleChart"></div>
+                <p class="font-medium mb-3">This pattern is most likely a:</p>
+                <div class="space-y-3 mb-6" id="puzzleOptions">
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectPuzzleOption(0)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="puzzle" class="mr-3" id="puzzleOption0">
+                            <span>Head and Shoulders</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectPuzzleOption(1)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="puzzle" class="mr-3" id="puzzleOption1">
+                            <span>Double Bottom</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectPuzzleOption(2)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="puzzle" class="mr-3" id="puzzleOption2">
+                            <span>Cup and Handle</span>
+                        </label>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg cursor-pointer hover:bg-white hover:bg-opacity-10" onclick="selectPuzzleOption(3)">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="puzzle" class="mr-3" id="puzzleOption3">
+                            <span>Bull Flag</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="puzzleFeedback" class="hidden p-4 rounded-lg mb-4"></div>
+                <div class="mt-4 flex justify-end">
+                    <button id="submitPuzzleBtn" class="glass-button px-6 py-2 rounded-lg" onclick="submitPuzzleAnswer()">Submit Answer</button>
+                </div>
+            </div>
+            <div id="puzzleResults" class="hidden text-center">
+                <i class="bi bi-lightbulb-fill text-5xl text-yellow-300 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Great Job!</h3>
+                <p class="text-xl mb-4">Your pattern recognition skills are improving.</p>
+                <p class="mb-6">Keep practicing to become better at identifying market patterns.</p>
+                <div class="flex justify-between gap-4">
+                    <button onclick="startNewPuzzle()" class="glass-button flex-1 py-3 rounded-lg">Next Puzzle</button>
+                    <button onclick="closePuzzle()" class="glass-button flex-1 py-3 rounded-lg">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Modal -->
+    <div id="strategyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass p-8 w-11/12 max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Modify Trading Strategy</h2>
+                <button onclick="closeStrategyModal()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label class="block mb-2">Primary Strategy</label>
+                    <select class="glass-input w-full p-3 rounded-lg" id="primaryStrategy">
+                        <option value="momentum">Momentum</option>
+                        <option value="reversal">Mean Reversion</option>
+                        <option value="breakout">Breakout</option>
+                        <option value="trend">Trend Following</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2">Secondary Strategy</label>
+                    <select class="glass-input w-full p-3 rounded-lg" id="secondaryStrategy">
+                        <option value="none">None</option>
+                        <option value="sentiment">Sentiment Analysis</option>
+                        <option value="volume">Volume Profile</option>
+                        <option value="volatility">Volatility Based</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2">Risk Level</label>
+                    <div class="flex items-center">
+                        <input type="range" min="1" max="10" value="5" id="riskLevel" class="w-full">
+                        <span class="ml-4 w-12" id="riskValue">5</span>
+                    </div>
+                    <div class="flex justify-between text-xs mt-1">
+                        <span>Conservative</span>
+                        <span>Aggressive</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2">Target Assets</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="glass-dark p-3 rounded-lg">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="mr-3 targetAsset" value="btc" checked>
+                                <span>BTC/USD</span>
+                            </label>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="mr-3 targetAsset" value="eth" checked>
+                                <span>ETH/USD</span>
+                            </label>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="mr-3 targetAsset" value="sol">
+                                <span>SOL/USD</span>
+                            </label>
+                        </div>
+                        <div class="glass-dark p-3 rounded-lg">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" class="mr-3 targetAsset" value="aapl">
+                                <span>AAPL</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2">Auto-Rebalance</label>
+                    <div class="flex">
+                        <label class="glass-dark p-3 rounded-l-lg flex-1 flex items-center justify-center cursor-pointer">
+                            <input type="radio" name="rebalance" value="daily" class="mr-2">
+                            <span>Daily</span>
+                        </label>
+                        <label class="glass-dark p-3 flex-1 flex items-center justify-center cursor-pointer">
+                            <input type="radio" name="rebalance" value="weekly" class="mr-2" checked>
+                            <span>Weekly</span>
+                        </label>
+                        <label class="glass-dark p-3 rounded-r-lg flex-1 flex items-center justify-center cursor-pointer">
+                            <input type="radio" name="rebalance" value="monthly" class="mr-2">
+                            <span>Monthly</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2">Stop Loss (% from entry)</label>
+                    <input type="number" min="1" max="20" value="2" class="glass-input w-full p-3 rounded-lg" id="stopLossPercent">
+                </div>
+                <div>
+                    <label class="block mb-2">Take Profit (% from entry)</label>
+                    <input type="number" min="1" max="50" value="5" class="glass-input w-full p-3 rounded-lg" id="takeProfitPercent">
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button class="glass-button px-6 py-3 rounded-lg" onclick="applyStrategy()">Apply Strategy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Modal -->
+    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass p-8 w-11/12 max-w-4xl h-5/6 overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">AI Trading Course</h2>
+                <button onclick="closeCourse()" class="text-white hover:text-gray-200">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="flex h-full overflow-hidden">
+                <div class="w-1/4 overflow-y-auto pr-4 border-r border-white border-opacity-20">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" onclick="loadCourseModule(1)" class="block p-3 rounded-lg glass-dark hover:bg-opacity-30 course-module active" id="courseModule1">
+                                1. Introduction to AI Trading
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadCourseModule(2)" class="block p-3 rounded-lg glass-dark hover:bg-opacity-30 course-module" id="courseModule2">
+                                2. Machine Learning Basics
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadCourseModule(3)" class="block p-3 rounded-lg glass-dark hover:bg-opacity-30 course-module" id="courseModule3">
+                                3. Data Processing
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadCourseModule(4)" class="block p-3 rounded-lg glass-dark hover:bg-opacity-30 course-module" id="courseModule4">
+                                4. Building AI Models
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="loadCourseModule(5)" class="block p-3 rounded-lg glass-dark hover:bg-opacity-30 course-module" id="courseModule5">
+                                5. Deployment & Optimization
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-3/4 pl-4 overflow-y-auto" id="courseContent">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Introduction to AI Trading</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80" alt="AI Trading" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            AI trading represents a significant evolution in the field of financial markets, combining artificial intelligence, machine learning, and big data to automate and enhance trading decisions. In this module, we'll explore the fundamentals of AI trading and how it's transforming the investment landscape.
+                        </p>
+                        <h4 class="font-bold mb-2">What is AI Trading?</h4>
+                        <p class="mb-4">
+                            AI trading refers to the use of artificial intelligence technologies to make trading decisions. These systems can analyze vast amounts of market data, identify patterns, and execute trades with minimal human intervention. The goal is to capitalize on market opportunities that might be missed by human traders due to limitations in processing speed or emotional biases.
+                        </p>
+                        <h4 class="font-bold mb-2">Key Components of AI Trading Systems:</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li>Data Collection & Processing: Gathering historical and real-time market data from various sources.</li>
+                            <li>Feature Engineering: Transforming raw data into meaningful features that can be used by ML models.</li>
+                            <li>Model Development: Creating and training algorithms to predict market movements.</li>
+                            <li>Backtesting: Validating strategies against historical data.</li>
+                            <li>Execution: Implementing the trading decisions in real markets.</li>
+                            <li>Monitoring & Optimization: Continuously evaluating and improving system performance.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Video Lesson:</h4>
+                        <div class="glass-dark p-4 rounded-lg flex items-center justify-center">
+                            <div class="text-center p-8">
+                                <i class="bi bi-play-circle text-5xl mb-2"></i>
+                                <p>Introduction to AI Trading</p>
+                                <p class="text-sm text-gray-300 mt-2">(Click to play video)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button class="glass-button px-4 py-2 rounded-lg opacity-50 cursor-not-allowed">Previous</button>
+                        <button onclick="loadCourseModule(2)" class="glass-button px-4 py-2 rounded-lg">Next: Machine Learning Basics</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Authentication Logic
+        let isSignIn = true;
+        let isAuthenticated = false;
+        
+        function toggleAuth() {
+            document.getElementById('authModal').classList.toggle('hidden');
+        }
+        
+        function toggleAuthMode() {
+            isSignIn = !isSignIn;
+            document.getElementById('authTitle').textContent = isSignIn ? 'Sign In' : 'Sign Up';
+            document.getElementById('authToggle').textContent = isSignIn ? 'Create account' : 'Sign in instead';
+            document.getElementById('nameField').classList.toggle('hidden');
+        }
+
+        // Investment Assistant Logic
+        function toggleInvestmentAssistant() {
+            document.getElementById('investmentAssistantModal').classList.toggle('hidden');
+            // Focus the input field
+            setTimeout(() => {
+                document.getElementById('investmentInput').focus();
+            }, 100);
+        }
+
+        function sendInvestmentQuery() {
+            const input = document.getElementById('investmentInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            const chatContainer = document.getElementById('chatContainer');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'user-bubble chat-bubble';
+            userBubble.innerHTML = `<p>${message}</p>`;
+            chatContainer.appendChild(userBubble);
+            
+            // Clear input
+            input.value = '';
+            
+            // Add loading indicator
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'ai-bubble chat-bubble flex justify-center';
+            loadingBubble.innerHTML = '<div class="loader"></div>';
+            chatContainer.appendChild(loadingBubble);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Fetch AI response from API
+            fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer H38Cbyi2gddyJWWQGwmjjYFsRi93'
+                },
+                body: JSON.stringify({
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: `As an AI investment advisor, provide personalized recommendations for this investment query: ${message}. Include asset allocation with percentages, expected returns, risk levels, and a brief explanation. Format it in a concise, easy-to-read way.`
+                                }
+                            ]
+                        }
+                    ]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading indicator
+                chatContainer.removeChild(loadingBubble);
+                
+                // Show AI response
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'ai-bubble chat-bubble';
+                aiBubble.innerHTML = `<p>${data.message || getAIResponse(message)}</p>`;
+                chatContainer.appendChild(aiBubble);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            })
+            .catch(error => {
+                // Remove loading indicator
+                chatContainer.removeChild(loadingBubble);
+                
+                // Fallback to local AI response
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'ai-bubble chat-bubble';
+                aiBubble.innerHTML = `<p>${getAIResponse(message)}</p>`;
+                chatContainer.appendChild(aiBubble);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
+        
+        // Simple AI response simulation as fallback
+        function getAIResponse(message) {
+            const lowerMsg = message.toLowerCase();
+            
+            if (lowerMsg.includes('50') || lowerMsg.includes('fifty') || lowerMsg.match(/\$?50/)) {
+                return "For a $50 investment, I recommend this allocation:<br><br>• 40% ETFs (VTI): Low risk, ~8% annual return<br>• 40% Blue-chip stocks: Medium risk, ~10% annual return<br>• 20% Bitcoin: High risk, potential for higher returns<br><br>This balanced approach gives you exposure to growth while maintaining some safety. Would you like more specific recommendations?";
+            }
+            
+            if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+                return "Hello! I'm your AI investment assistant. How much would you like to invest today? I can help suggest a personalized allocation strategy based on your risk tolerance and investment goals.";
+            }
+            
+            if (lowerMsg.includes('risk')) {
+                return "I can suggest investments with different risk levels:<br><br>• Low risk: Index ETFs (VTI, SPY), Treasury bonds, Blue-chip dividend stocks<br>• Medium risk: Growth stocks, sector ETFs, Corporate bonds<br>• High risk: Cryptocurrencies, emerging market stocks, leveraged ETFs<br><br>What's your risk tolerance level and investment amount?";
+            }
+            
+            if (lowerMsg.includes('best investment')) {
+                return "The 'best' investment depends on your goals, time horizon, and risk tolerance. For long-term growth with moderate risk, a diversified portfolio of ETFs covering US markets, international stocks, and bonds is often recommended. For higher returns with higher risk, a mix of growth stocks and crypto might be worth considering. What's your investment timeline and risk comfort level?";
+            }
+            
+            // Extract potential investment amount
+            const amountMatch = message.match(/\$?(\d+)(\.\d+)?[k]?/);
+            
+            if (amountMatch) {
+                let amount = parseFloat(amountMatch[1]);
+                if (amountMatch[0].includes('k')) amount *= 1000;
+                
+                return `Based on your investment amount of $${amount.toLocaleString()}, here's my suggested allocation:<br><br>• 50% Index ETFs: Low risk core holding (VTI, VOO)<br>• 30% Growth stocks: Apple, Microsoft, Amazon<br>• 15% Crypto: Bitcoin, Ethereum<br>• 5% Cash reserve for opportunities<br><br>This balanced approach gives you exposure to steady market growth, tech innovation, and emerging digital assets. Expected annual return: 8-12% with moderate risk. Would you like more specific recommendations?`;
+            }
+            
+            return "Based on your input, I'd need to know more about your investment goals, time horizon, and risk tolerance to provide a personalized recommendation. How much are you looking to invest, and what are your financial goals?";
+        }
+
+        // Section Navigation
+        function showSection(section) {
+            document.getElementById('landing-section').classList.add('hidden');
+            document.getElementById('trading-section').classList.add('hidden');
+            document.getElementById('learning-section').classList.add('hidden');
+            
+            document.getElementById(`${section}-section`).classList.remove('hidden');
+            
+            // Initialize charts when trading section is shown
+            if (section === 'trading') {
+                initializeMarketChart();
+            }
+        }
+
+        // Quiz Functions
+        const quizQuestions = [
+            {
+                question: "What is a key advantage of using AI in trading?",
+                options: [
+                    "Eliminating all trading risk",
+                    "Processing large amounts of data quickly",
+                    "Guaranteed profits on all trades",
+                    "Bypassing market regulations"
+                ],
+                correctAnswer: 1,
+                feedback: "AI's ability to process vast amounts of data quickly is one of its key advantages in trading, allowing it to identify patterns and opportunities that humans might miss."
+            },
+            {
+                question: "What is 'backtesting' in algorithmic trading?",
+                options: [
+                    "Reviewing past trades made by human traders",
+                    "Testing a trading strategy on historical market data",
+                    "Analyzing competitor trading strategies",
+                    "Predicting future market movements"
+                ],
+                correctAnswer: 1,
+                feedback: "Backtesting involves testing a trading strategy on historical data to see how it would have performed, helping traders evaluate its potential effectiveness."
+            },
+            {
+                question: "What does 'stop-loss' refer to in trading?",
+                options: [
+                    "A strategy to prevent profits from decreasing",
+                    "An order to sell when a stock reaches a certain high price",
+                    "An order to sell when a stock drops to a certain price",
+                    "A method to stop trading for the day"
+                ],
+                correctAnswer: 2,
+                feedback: "A stop-loss is an order to sell a security when it reaches a specific price, designed to limit an investor's potential loss on a position."
+            },
+            {
+                question: "What is 'dollar-cost averaging'?",
+                options: [
+                    "Converting foreign currencies before trading",
+                    "Investing a fixed dollar amount regularly regardless of price",
+                    "Calculating profits in dollar terms",
+                    "Trading exclusively with USD pairs"
+                ],
+                correctAnswer: 1,
+                feedback: "Dollar-cost averaging is investing a fixed dollar amount at regular intervals regardless of the asset's price, reducing the impact of volatility."
+            },
+            {
+                question: "Which type of analysis focuses on company financials and economic factors?",
+                options: [
+                    "Technical analysis",
+                    "Sentiment analysis",
+                    "Fundamental analysis",
+                    "Momentum analysis"
+                ],
+                correctAnswer: 2,
+                feedback: "Fundamental analysis examines economic and financial factors to determine a security's intrinsic value, including company financials, industry conditions, and economic indicators."
+            }
+        ];
+        
+        let currentQuizQuestion = 0;
+        let quizScore = 0;
+        let selectedQuizAnswer = null;
+
+        function startQuiz() {
+            document.getElementById('quizModal').classList.remove('hidden');
+            currentQuizQuestion = 0;
+            quizScore = 0;
+            loadQuizQuestion();
+            document.getElementById('quizContent').classList.remove('hidden');
+            document.getElementById('quizResults').classList.add('hidden');
+        }
+        
+        function loadQuizQuestion() {
+            const question = quizQuestions[currentQuizQuestion];
+            document.getElementById('quizQuestion').textContent = `Question ${currentQuizQuestion + 1} of ${quizQuestions.length}`;
+            document.getElementById('quizPrompt').textContent = question.question;
+            
+            // Reset options
+            const optionsContainer = document.getElementById('quizOptions');
+            for (let i = 0; i < 4; i++) {
+                const optionElement = document.getElementById(`quizOption${i}`);
+                optionElement.checked = false;
+                optionElement.parentElement.parentElement.querySelector('span').textContent = question.options[i];
+            }
+            
+            // Hide feedback
+            document.getElementById('quizFeedback').classList.add('hidden');
+            
+            // Reset selected answer
+            selectedQuizAnswer = null;
+            
+            // Update next button
+            document.getElementById('nextQuizBtn').textContent = currentQuizQuestion === quizQuestions.length - 1 ? 'Finish Quiz' : 'Next Question';
+        }
+        
+        function selectQuizOption(index) {
+            // Uncheck all options
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`quizOption${i}`).checked = false;
+            }
+            
+            // Check selected option
+            document.getElementById(`quizOption${index}`).checked = true;
+            selectedQuizAnswer = index;
+            
+            // Show feedback
+            const question = quizQuestions[currentQuizQuestion];
+            const feedbackElement = document.getElementById('quizFeedback');
+            
+            if (index === question.correctAnswer) {
+                feedbackElement.innerHTML = `<i class="bi bi-check-circle-fill text-green-400 mr-2"></i> Correct! ${question.feedback}`;
+                feedbackElement.className = 'mt-4 p-4 rounded-lg glass-dark bg-green-500 bg-opacity-10';
+            } else {
+                feedbackElement.innerHTML = `<i class="bi bi-x-circle-fill text-red-400 mr-2"></i> Incorrect. The correct answer is: ${question.options[question.correctAnswer]}. ${question.feedback}`;
+                feedbackElement.className = 'mt-4 p-4 rounded-lg glass-dark bg-red-500 bg-opacity-10';
+            }
+            
+            feedbackElement.classList.remove('hidden');
+        }
+        
+        function nextQuizQuestion() {
+            if (selectedQuizAnswer === null) {
+                alert('Please select an answer before proceeding.');
+                return;
+            }
+            
+            // Check if answer is correct
+            const question = quizQuestions[currentQuizQuestion];
+            if (selectedQuizAnswer === question.correctAnswer) {
+                quizScore++;
+            }
+            
+            // Move to next question or finish quiz
+            currentQuizQuestion++;
+            
+            if (currentQuizQuestion < quizQuestions.length) {
+                loadQuizQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+        
+        function showQuizResults() {
+            document.getElementById('quizContent').classList.add('hidden');
+            document.getElementById('quizResults').classList.remove('hidden');
+            document.getElementById('quizScore').textContent = quizScore;
+            
+            // Set feedback based on score
+            const feedbackElement = document.getElementById('quizFeedbackFinal');
+            if (quizScore === quizQuestions.length) {
+                feedbackElement.textContent = 'Perfect score! You have an excellent understanding of trading concepts.';
+            } else if (quizScore >= quizQuestions.length * 0.7) {
+                feedbackElement.textContent = 'Great job! You have a solid understanding of trading concepts.';
+            } else if (quizScore >= quizQuestions.length * 0.5) {
+                feedbackElement.textContent = 'Good effort! You have a basic understanding of trading concepts but could benefit from additional learning.';
+            } else {
+                feedbackElement.textContent = 'You might want to review the basic trading concepts in our learning materials.';
+            }
+        }
+        
+        function closeQuiz() {
+            document.getElementById('quizModal').classList.add('hidden');
+        }
+
+        // Puzzle Functions
+        const puzzlePatterns = [
+            {
+                name: "Head and Shoulders",
+                data: [100, 110, 120, 115, 125, 150, 140, 160, 140, 130, 140, 120, 110, 105, 95, 90],
+                correctAnswer: 0,
+                explanation: "The Head and Shoulders pattern is characterized by three peaks, with the middle peak (the head) being higher than the two outer peaks (shoulders). It typically signals a reversal from bullish to bearish trend."
+            },
+            {
+                name: "Double Bottom",
+                data: [100, 95, 90, 85, 80, 85, 90, 85, 80, 85, 90, 95, 100, 105, 110, 115],
+                correctAnswer: 1,
+                explanation: "The Double Bottom pattern shows two low points at approximately the same level, separated by a moderate peak. It typically signals a reversal from bearish to bullish trend."
+            },
+            {
+                name: "Cup and Handle",
+                data: [100, 95, 90, 85, 90, 95, 100, 105, 110, 108, 106, 108, 110, 115, 120, 125],
+                correctAnswer: 2,
+                explanation: "The Cup and Handle pattern resembles a tea cup with a handle. The cup forms a U shape, and the handle is a slight downward drift. It typically signals a continuation of a bullish trend."
+            },
+            {
+                name: "Bull Flag",
+                data: [100, 110, 120, 130, 140, 150, 148, 146, 148, 146, 148, 150, 160, 170, 180, 190],
+                correctAnswer: 3,
+                explanation: "The Bull Flag pattern consists of a strong upward movement (the pole) followed by a consolidation period with parallel downward trendlines (the flag). It typically signals a continuation of the bullish trend."
+            }
+        ];
+        
+        let currentPuzzle = 0;
+        let selectedPuzzleAnswer = null;
+        
+        function startPuzzle() {
+            document.getElementById('puzzleModal').classList.remove('hidden');
+            currentPuzzle = Math.floor(Math.random() * puzzlePatterns.length);
+            loadPuzzle();
+            document.getElementById('puzzleContent').classList.remove('hidden');
+            document.getElementById('puzzleResults').classList.add('hidden');
+        }
+        
+        function loadPuzzle() {
+            initPuzzleChart();
+            
+            // Reset options
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`puzzleOption${i}`).checked = false;
+            }
+            
+            // Hide feedback
+            const feedbackElement = document.getElementById('puzzleFeedback');
+            feedbackElement.classList.add('hidden');
+            
+            // Reset selected answer
+            selectedPuzzleAnswer = null;
+        }
+        
+        function selectPuzzleOption(index) {
+            // Uncheck all options
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`puzzleOption${i}`).checked = false;
+            }
+            
+            // Check selected option
+            document.getElementById(`puzzleOption${index}`).checked = true;
+            selectedPuzzleAnswer = index;
+        }
+        
+        function submitPuzzleAnswer() {
+            if (selectedPuzzleAnswer === null) {
+                alert('Please select an answer before submitting.');
+                return;
+            }
+            
+            const pattern = puzzlePatterns[currentPuzzle];
+            const feedbackElement = document.getElementById('puzzleFeedback');
+            
+            if (selectedPuzzleAnswer === pattern.correctAnswer) {
+                feedbackElement.innerHTML = `<i class="bi bi-check-circle-fill text-green-400 mr-2"></i> Correct! This is a ${pattern.name} pattern. ${pattern.explanation}`;
+                feedbackElement.className = 'p-4 rounded-lg glass-dark bg-green-500 bg-opacity-10';
+            } else {
+                feedbackElement.innerHTML = `<i class="bi bi-x-circle-fill text-red-400 mr-2"></i> Incorrect. This is a ${pattern.name} pattern. ${pattern.explanation}`;
+                feedbackElement.className = 'p-4 rounded-lg glass-dark bg-red-500 bg-opacity-10';
+            }
+            
+            feedbackElement.classList.remove('hidden');
+            
+            // Change button to show results
+            document.getElementById('submitPuzzleBtn').textContent = 'View Results';
+            document.getElementById('submitPuzzleBtn').onclick = function() {
+                document.getElementById('puzzleContent').classList.add('hidden');
+                document.getElementById('puzzleResults').classList.remove('hidden');
+            };
+        }
+        
+        function startNewPuzzle() {
+            currentPuzzle = Math.floor(Math.random() * puzzlePatterns.length);
+            document.getElementById('puzzleContent').classList.remove('hidden');
+            document.getElementById('puzzleResults').classList.add('hidden');
+            document.getElementById('submitPuzzleBtn').textContent = 'Submit Answer';
+            document.getElementById('submitPuzzleBtn').onclick = submitPuzzleAnswer;
+            loadPuzzle();
+        }
+        
+        function closePuzzle() {
+            document.getElementById('puzzleModal').classList.add('hidden');
+        }
+
+        // Strategy Modal Functions
+        function showStrategyModal() {
+            document.getElementById('strategyModal').classList.remove('hidden');
+            
+            // Update risk slider value display
+            const riskSlider = document.getElementById('riskLevel');
+            const riskValue = document.getElementById('riskValue');
+            riskValue.textContent = riskSlider.value;
+            
+            riskSlider.addEventListener('input', function() {
+                riskValue.textContent = this.value;
+            });
+        }
+        
+        function closeStrategyModal() {
+            document.getElementById('strategyModal').classList.add('hidden');
+        }
+        
+        function applyStrategy() {
+            // Get strategy values
+            const primaryStrategy = document.getElementById('primaryStrategy').value;
+            const secondaryStrategy = document.getElementById('secondaryStrategy').value;
+            const riskLevel = document.getElementById('riskLevel').value;
+            
+            // Get selected assets
+            const targetAssets = [];
+            document.querySelectorAll('.targetAsset:checked').forEach(asset => {
+                targetAssets.push(asset.value);
+            });
+            
+            // Get rebalance frequency
+            const rebalanceFrequency = document.querySelector('input[name="rebalance"]:checked').value;
+            
+            // Get stop loss and take profit
+            const stopLossPercent = document.getElementById('stopLossPercent').value;
+            const takeProfitPercent = document.getElementById('takeProfitPercent').value;
+            
+            // Update trading bot status
+            const strategyNames = {
+                momentum: "Momentum",
+                reversal: "Mean Reversion",
+                breakout: "Breakout",
+                trend: "Trend Following"
+            };
+            
+            const secondaryNames = {
+                none: "",
+                sentiment: "Sentiment Analysis",
+                volume: "Volume Profile",
+                volatility: "Volatility Based"
+            };
+            
+            // Update strategy display
+            let strategyDisplay = strategyNames[primaryStrategy];
+            if (secondaryStrategy !== 'none') {
+                strategyDisplay += " + " + secondaryNames[secondaryStrategy];
+            }
+            
+            document.getElementById('currentStrategy').textContent = strategyDisplay;
+            
+            // Update other trading bot info
+            // Generate a random positive or negative change based on risk level
+            const dailyChange = (Math.random() * riskLevel * 0.5 * (Math.random() > 0.5 ? 1 : -1)).toFixed(2);
+            const dailyPLElement = document.getElementById('dailyPL');
+            
+            if (parseFloat(dailyChange) >= 0) {
+                dailyPLElement.textContent = `+${dailyChange}%`;
+                dailyPLElement.className = 'text-green-400';
+            } else {
+                dailyPLElement.textContent = `${dailyChange}%`;
+                dailyPLElement.className = 'text-red-400';
+            }
+            
+            // Simulate a new position
+            const assets = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AAPL'];
+            const positions = ['Long', 'Short'];
+            
+            let positionType = Math.random() > 0.5 ? 'Long' : 'Short';
+            let selectedAsset = assets[Math.floor(Math.random() * assets.length)];
+            
+            document.getElementById('currentPosition').textContent = `${positionType} ${selectedAsset}`;
+            
+            // Simulate new entry price
+            const assetPrices = {
+                'BTC/USD': 36000 + Math.random() * 2000,
+                'ETH/USD': 2300 + Math.random() * 200,
+                'SOL/USD': 150 + Math.random() * 20,
+                'AAPL': 175 + Math.random() * 10
+            };
+            
+            const entryPrice = assetPrices[selectedAsset].toFixed(2);
+            document.getElementById('entryPrice').textContent = `$${entryPrice}`;
+            
+            // Calculate stop loss and take profit
+            const stopLossPrice = positionType === 'Long' ? 
+                (entryPrice * (1 - stopLossPercent/100)).toFixed(2) : 
+                (entryPrice * (1 + stopLossPercent/100)).toFixed(2);
+                
+            const takeProfitPrice = positionType === 'Long' ? 
+                (entryPrice * (1 + takeProfitPercent/100)).toFixed(2) : 
+                (entryPrice * (1 - takeProfitPercent/100)).toFixed(2);
+                
+            document.getElementById('stopLoss').textContent = `$${stopLossPrice}`;
+            document.getElementById('takeProfit').textContent = `$${takeProfitPrice}`;
+            
+            // Update bot status with a random status
+            const botStatusElement = document.getElementById('botStatus');
+            const statuses = [
+                { text: 'Active', class: 'bg-green-500 bg-opacity-30 text-green-100' },
+                { text: 'Monitoring', class: 'bg-blue-500 bg-opacity-30 text-blue-100' },
+                { text: 'Trading', class: 'bg-purple-500 bg-opacity-30 text-purple-100' }
+            ];
+            
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            botStatusElement.textContent = `${randomStatus.text} `;
+            botStatusElement.className = `px-3 py-1 rounded-full ${randomStatus.class}`;
+            botStatusElement.innerHTML += '<i class="bi bi-robot"></i>';
+            
+            // Close modal
+            closeStrategyModal();
+            
+            // Show success notification
+            showNotification('Strategy updated successfully');
+        }
+
+        // Course functions
+        function startCourse() {
+            document.getElementById('courseModal').classList.remove('hidden');
+            loadCourseModule(1);
+        }
+        
+        function loadCourseModule(moduleNumber) {
+            // Reset all modules to inactive
+            document.querySelectorAll('.course-module').forEach(module => {
+                module.classList.remove('bg-opacity-30');
+                module.classList.remove('active');
+            });
+            
+            // Set selected module to active
+            const selectedModule = document.getElementById(`courseModule${moduleNumber}`);
+            selectedModule.classList.add('bg-opacity-30');
+            selectedModule.classList.add('active');
+            
+            // Load corresponding module content
+            // In a real app, this would fetch content from an API
+            const moduleContent = getCourseModuleContent(moduleNumber);
+            document.getElementById('courseContent').innerHTML = moduleContent;
+        }
+        
+        function getCourseModuleContent(moduleNumber) {
+            const modules = {
+                1: `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Introduction to AI Trading</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80" alt="AI Trading" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            AI trading represents a significant evolution in the field of financial markets, combining artificial intelligence, machine learning, and big data to automate and enhance trading decisions. In this module, we'll explore the fundamentals of AI trading and how it's transforming the investment landscape.
+                        </p>
+                        <h4 class="font-bold mb-2">What is AI Trading?</h4>
+                        <p class="mb-4">
+                            AI trading refers to the use of artificial intelligence technologies to make trading decisions. These systems can analyze vast amounts of market data, identify patterns, and execute trades with minimal human intervention. The goal is to capitalize on market opportunities that might be missed by human traders due to limitations in processing speed or emotional biases.
+                        </p>
+                        <h4 class="font-bold mb-2">Key Components of AI Trading Systems:</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li>Data Collection & Processing: Gathering historical and real-time market data from various sources.</li>
+                            <li>Feature Engineering: Transforming raw data into meaningful features that can be used by ML models.</li>
+                            <li>Model Development: Creating and training algorithms to predict market movements.</li>
+                            <li>Backtesting: Validating strategies against historical data.</li>
+                            <li>Execution: Implementing the trading decisions in real markets.</li>
+                            <li>Monitoring & Optimization: Continuously evaluating and improving system performance.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Video Lesson:</h4>
+                        <div class="glass-dark p-4 rounded-lg flex items-center justify-center">
+                            <div class="text-center p-8">
+                                <i class="bi bi-play-circle text-5xl mb-2"></i>
+                                <p>Introduction to AI Trading</p>
+                                <p class="text-sm text-gray-300 mt-2">(Click to play video)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button class="glass-button px-4 py-2 rounded-lg opacity-50 cursor-not-allowed">Previous</button>
+                        <button onclick="loadCourseModule(2)" class="glass-button px-4 py-2 rounded-lg">Next: Machine Learning Basics</button>
+                    </div>
+                `,
+                2: `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Machine Learning Basics</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1488229297570-58520851e868?auto=format&fit=crop&q=80" alt="Machine Learning" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            Machine Learning (ML) forms the backbone of AI trading systems. In this module, we'll cover the fundamental concepts of ML and how they apply to financial markets.
+                        </p>
+                        <h4 class="font-bold mb-2">Types of Machine Learning</h4>
+                        <p class="mb-4">
+                            There are three main types of machine learning that are relevant to trading:
+                        </p>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Supervised Learning:</strong> Algorithms trained on labeled data to predict outcomes. Examples include regression models for price prediction and classification models for trend direction.</li>
+                            <li><strong>Unsupervised Learning:</strong> Algorithms that find patterns in unlabeled data. Used for anomaly detection, clustering similar market conditions, and dimensionality reduction.</li>
+                            <li><strong>Reinforcement Learning:</strong> Algorithms that learn optimal actions through trial and error. Particularly useful for developing adaptive trading strategies that maximize returns.</li>
+                        </ul>
+                        <h4 class="font-bold mb-2">Common ML Algorithms in Trading</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Linear/Logistic Regression:</strong> For predicting price movements or probability of market events.</li>
+                            <li><strong>Decision Trees & Random Forests:</strong> For creating rule-based trading strategies with good interpretability.</li>
+                            <li><strong>Support Vector Machines:</strong> For classification problems like bull/bear market detection.</li>
+                            <li><strong>Neural Networks:</strong> For capturing complex non-linear relationships in market data.</li>
+                            <li><strong>LSTM/RNN:</strong> For time-series forecasting, capturing temporal dependencies in market data.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Interactive Exercise:</h4>
+                        <div class="glass-dark p-4 rounded-lg">
+                            <p class="mb-4">Match the ML algorithm with its most suitable application in trading:</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <span class="w-32">LSTM Networks</span>
+                                    <select class="glass-input ml-2 p-2 rounded-lg flex-grow">
+                                        <option>Select application</option>
+                                        <option>Price prediction</option>
+                                        <option>Anomaly detection</option>
+                                        <option>Portfolio optimization</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-32">Random Forest</span>
+                                    <select class="glass-input ml-2 p-2 rounded-lg flex-grow">
+                                        <option>Select application</option>
+                                        <option>Feature importance</option>
+                                        <option>Sentiment analysis</option>
+                                        <option>Real-time trading</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="glass-button px-4 py-2 rounded-lg mt-4">Check Answers</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button onclick="loadCourseModule(1)" class="glass-button px-4 py-2 rounded-lg">Previous: Introduction</button>
+                        <button onclick="loadCourseModule(3)" class="glass-button px-4 py-2 rounded-lg">Next: Data Processing</button>
+                    </div>
+                `,
+                3: `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Data Processing for AI Trading</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80" alt="Data Processing" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            High-quality data is the foundation of any successful AI trading system. This module covers essential techniques for collecting, cleaning, and preparing financial data for machine learning models.
+                        </p>
+                        <h4 class="font-bold mb-2">Data Sources for Trading</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Market Data:</strong> Price, volume, order book data from exchanges (e.g., NYSE, Nasdaq, Binance).</li>
+                            <li><strong>Economic Indicators:</strong> GDP, inflation rates, employment statistics, interest rates.</li>
+                            <li><strong>Company Fundamentals:</strong> Financial statements, earnings reports, P/E ratios.</li>
+                            <li><strong>Alternative Data:</strong> Social media sentiment, satellite imagery, credit card transactions.</li>
+                            <li><strong>Technical Indicators:</strong> Calculated signals like Moving Averages, RSI, MACD, Bollinger Bands.</li>
+                        </ul>
+                        <h4 class="font-bold mb-2">Data Preprocessing Techniques</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Handling Missing Data:</strong> Forward/backward fill for time series, imputation methods.</li>
+                            <li><strong>Normalization:</strong> Scaling features to a common range to improve model performance.</li>
+                            <li><strong>Feature Engineering:</strong> Creating derived features like price momentum, volatility measures.</li>
+                            <li><strong>Time Series Transformations:</strong> Lag features, rolling statistics, return calculations.</li>
+                            <li><strong>Outlier Detection:</strong> Identifying and handling extreme market events.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Code Example: Feature Engineering</h4>
+                        <div class="glass-dark p-4 rounded-lg overflow-x-auto">
+                            <pre class="text-gray-200 text-sm">
+# Python example of creating technical indicators
+import pandas as pd
+import numpy as np
+
+def add_features(df):
+    # Add Simple Moving Averages
+    df['SMA20'] = df['close'].rolling(window=20).mean()
+    df['SMA50'] = df['close'].rolling(window=50).mean()
+    
+    # Add Relative Strength Index (RSI)
+    delta = df['close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df['RSI'] = 100 - (100 / (1 + rs))
+    
+    # Add Bollinger Bands
+    df['BB_middle'] = df['close'].rolling(window=20).mean()
+    df['BB_std'] = df['close'].rolling(window=20).std()
+    df['BB_upper'] = df['BB_middle'] + 2 * df['BB_std']
+    df['BB_lower'] = df['BB_middle'] - 2 * df['BB_std']
+    
+    return df
+                            </pre>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button onclick="loadCourseModule(2)" class="glass-button px-4 py-2 rounded-lg">Previous: ML Basics</button>
+                        <button onclick="loadCourseModule(4)" class="glass-button px-4 py-2 rounded-lg">Next: Building Models</button>
+                    </div>
+                `,
+                4: `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Building AI Models for Trading</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1517292987719-0369a794ec0f?auto=format&fit=crop&q=80" alt="AI Models" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            In this module, we'll explore how to design, train, and evaluate ML models specifically for trading applications. We'll focus on practical considerations and common pitfalls.
+                        </p>
+                        <h4 class="font-bold mb-2">Model Design Considerations</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Problem Formulation:</strong> Classification (direction prediction) vs. regression (price prediction).</li>
+                            <li><strong>Prediction Horizon:</strong> Short-term (intraday) vs. long-term (weeks/months) forecasting.</li>
+                            <li><strong>Feature Selection:</strong> Identifying the most predictive features while avoiding multicollinearity.</li>
+                            <li><strong>Model Complexity:</strong> Balancing underfitting vs. overfitting to historical data.</li>
+                            <li><strong>Computational Efficiency:</strong> Ensuring models can run in real-time trading environments.</li>
+                        </ul>
+                        <h4 class="font-bold mb-2">Model Evaluation</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Walk-Forward Testing:</strong> Training on expanding windows of historical data to simulate real trading.</li>
+                            <li><strong>Performance Metrics:</strong> Beyond accuracy - Sharpe ratio, max drawdown, profit factor.</li>
+                            <li><strong>Cross-Validation:</strong> Adapted for time-series data to prevent look-ahead bias.</li>
+                            <li><strong>Robustness Testing:</strong> Performance across different market regimes and stress scenarios.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Case Study: LSTM for Price Prediction</h4>
+                        <div class="glass-dark p-4 rounded-lg">
+                            <p class="mb-4">This case study examines how an LSTM neural network was applied to predict Bitcoin price movements:</p>
+                            <ul class="list-disc pl-6 mb-4 space-y-2">
+                                <li><strong>Data Used:</strong> 3 years of BTC/USD 1-hour candle data + volume + technical indicators.</li>
+                                <li><strong>Model Architecture:</strong> 3 LSTM layers with dropout for regularization.</li>
+                                <li><strong>Training Approach:</strong> 70% training, 15% validation, 15% testing with walk-forward validation.</li>
+                                <li><strong>Results:</strong> Achieved 58% directional accuracy with profitable Sharpe ratio of 1.8.</li>
+                                <li><strong>Limitations:</strong> Performance deteriorated during extreme market volatility.</li>
+                            </ul>
+                            <div class="chart-container h-40 mb-4 glass" id="casestudyChart"></div>
+                            <p class="text-sm text-gray-300">Chart: Model predictions (orange) vs. actual prices (blue)</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button onclick="loadCourseModule(3)" class="glass-button px-4 py-2 rounded-lg">Previous: Data Processing</button>
+                        <button onclick="loadCourseModule(5)" class="glass-button px-4 py-2 rounded-lg">Next: Deployment</button>
+                    </div>
+                `,
+                5: `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4">Deployment & Optimization</h3>
+                        <div class="rounded-lg overflow-hidden mb-6">
+                            <img src="https://images.unsplash.com/photo-1534357808625-8c1d60979240?auto=format&fit=crop&q=80" alt="Deployment" class="w-full h-48 object-cover">
+                        </div>
+                        <p class="mb-4">
+                            In this final module, we'll cover how to deploy AI trading systems to live markets, monitor their performance, and continuously optimize them for changing market conditions.
+                        </p>
+                        <h4 class="font-bold mb-2">Deployment Architecture</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Data Pipeline:</strong> Setting up robust real-time data feeds with fallbacks.</li>
+                            <li><strong>Signal Generation:</strong> Processing incoming data and generating trade signals.</li>
+                            <li><strong>Risk Management:</strong> Position sizing, stop-loss execution, exposure limits.</li>
+                            <li><strong>Order Execution:</strong> Smart order routing, minimizing slippage and market impact.</li>
+                            <li><strong>Monitoring:</strong> Real-time dashboards, alerting systems for anomalies.</li>
+                        </ul>
+                        <h4 class="font-bold mb-2">Optimization Strategies</h4>
+                        <ul class="list-disc pl-6 mb-4 space-y-2">
+                            <li><strong>Continuous Learning:</strong> Online learning vs. periodic retraining approaches.</li>
+                            <li><strong>Regime Detection:</strong> Identifying market regimes and adapting strategies.</li>
+                            <li><strong>Ensemble Methods:</strong> Combining multiple models for more robust predictions.</li>
+                            <li><strong>Hyperparameter Tuning:</strong> Automated optimization of model parameters.</li>
+                            <li><strong>Portfolio Construction:</strong> Optimizing asset allocation based on model signals.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Advanced Topic: Reinforcement Learning</h4>
+                        <div class="glass-dark p-4 rounded-lg">
+                            <p class="mb-4">Reinforcement Learning (RL) represents the cutting edge of AI trading research. Key concepts include:</p>
+                            <ul class="list-disc pl-6 mb-4 space-y-2">
+                                <li><strong>State Representation:</strong> Encoding market conditions and portfolio state.</li>
+                                <li><strong>Action Space:</strong> Discrete (buy/hold/sell) vs. continuous (position sizing).</li>
+                                <li><strong>Reward Function:</strong> Balancing returns, risk, and transaction costs.</li>
+                                <li><strong>Algorithms:</strong> Deep Q-Networks, Policy Gradient methods, Actor-Critic architectures.</li>
+                                <li><strong>Challenges:</strong> Non-stationary environments, sparse rewards, exploration/exploitation balance.</li>
+                            </ul>
+                            <p class="text-sm">RL agents can potentially develop sophisticated trading strategies that adapt to changing market conditions without explicit reprogramming.</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button onclick="loadCourseModule(4)" class="glass-button px-4 py-2 rounded-lg">Previous: Building Models</button>
+                        <button onclick="closeCourse()" class="glass-button px-4 py-2 rounded-lg">Complete Course</button>
+                    </div>
+                `
+            };
+            
+            return modules[moduleNumber] || 'Content not available';
+        }
+        
+        function closeCourse() {
+            document.getElementById('courseModal').classList.add('hidden');
+        }
+
+        // Listen for Enter key in investment input
+        document.getElementById('investmentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendInvestmentQuery();
+            }
+        });
+
+        // Form submission
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            isAuthenticated = true;
+            document.getElementById('authBtn').textContent = 'Sign Out';
+            toggleAuth();
+            showNotification('Authentication successful!');
+        });
+
+        // Market Chart initialization
+        function initializeMarketChart() {
+            if (!document.getElementById('marketChart')) return;
+            
+            // Clear existing chart
+            document.getElementById('marketChart').innerHTML = '';
+            
+            const marketCtx = document.createElement('canvas');
+            document.getElementById('marketChart').appendChild(marketCtx);
+            
+            // Get selected market
+            const selectedMarket = document.getElementById('marketSelector').value;
+            
+            // Generate market data based on selection
+            let marketData;
+            let previousValue;
+            
+            switch (selectedMarket) {
+                case 'btc':
+                    previousValue = 36000;
+                    marketData = generateMarketData(previousValue, 0.008);
+                    break;
+                case 'eth':
+                    previousValue = 2300;
+                    marketData = generateMarketData(previousValue, 0.007);
+                    break;
+                case 'sol':
+                    previousValue = 150;
+                    marketData = generateMarketData(previousValue, 0.01);
+                    break;
+                case 'aapl':
+                    previousValue = 175;
+                    marketData = generateMarketData(previousValue, 0.004);
+                    break;
+                default:
+                    previousValue = 36000;
+                    marketData = generateMarketData(previousValue, 0.008);
+            }
+            
+            // Create chart
+            window.marketChart = new Chart(marketCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: marketData.length}, (_, i) => i),
+                    datasets: [{
+                        label: selectedMarket.toUpperCase() + (selectedMarket !== 'aapl' ? '/USD' : ''),
+                        data: marketData,
+                        borderColor: 'rgba(147, 51, 234, 1)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update portfolio summary with latest price
+            updatePortfolioSummary(marketData[marketData.length - 1], selectedMarket);
+        }
+        
+        function generateMarketData(startValue, volatility) {
+            const data = [];
+            let currentValue = startValue;
+            
+            for (let i = 0; i < 30; i++) {
+                // Generate somewhat realistic price movements
+                const change = currentValue * (volatility * (Math.random() - 0.5));
+                currentValue += change;
+                data.push(currentValue);
+            }
+            
+            return data;
+        }
+        
+        function updateMarketChart() {
+            initializeMarketChart();
+        }
+        
+        function updatePortfolioSummary(latestPrice, market) {
+            // Random changes to make the dashboard dynamic
+            const changePercent = (Math.random() * 5 * (Math.random() > 0.5 ? 1 : -1)).toFixed(2);
+            const profitLossAmount = (12457.89 * changePercent / 100).toFixed(2);
+            
+            const portfolioValue = document.getElementById('portfolioValue');
+            const portfolioChange = document.getElementById('portfolioChange');
+            const profitLoss = document.getElementById('profitLoss');
+            const profitLossPercent = document.getElementById('profitLossPercent');
+            
+            portfolioValue.textContent = `$${(12457.89 + parseFloat(profitLossAmount)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            if (parseFloat(changePercent) >= 0) {
+                portfolioChange.innerHTML = `<i class="bi bi-arrow-up"></i> ${Math.abs(changePercent)}% today`;
+                portfolioChange.className = 'text-green-400';
+                profitLoss.textContent = `+$${Math.abs(profitLossAmount)}`;
+                profitLoss.className = 'text-2xl font-bold text-green-400';
+                profitLossPercent.textContent = `+${Math.abs(changePercent)}% all time`;
+                profitLossPercent.className = 'text-green-400';
+            } else {
+                portfolioChange.innerHTML = `<i class="bi bi-arrow-down"></i> ${Math.abs(changePercent)}% today`;
+                portfolioChange.className = 'text-red-400';
+                profitLoss.textContent = `-$${Math.abs(profitLossAmount)}`;
+                profitLoss.className = 'text-2xl font-bold text-red-400';
+                profitLossPercent.textContent = `-${Math.abs(changePercent)}% all time`;
+                profitLossPercent.className = 'text-red-400';
+            }
+            
+            // Update active positions with random numbers
+            document.getElementById('activePositionsCount').textContent = Math.floor(Math.random() * 5) + 4; // 4-8 positions
+            document.getElementById('marketsCount').textContent = `Across ${Math.floor(Math.random() * 3) + 2} markets`; // 2-4 markets
+            
+            // Add a new trade to recent trades list occasionally
+            if (Math.random() > 0.7) {
+                addRecentTrade(market);
+            }
+        }
+        
+        function addRecentTrade(market) {
+            const tradesList = document.getElementById('recentTradesList');
+            const trades = tradesList.querySelectorAll('tr');
+            
+            // Remove oldest trade if there are already 3
+            if (trades.length >= 3) {
+                tradesList.removeChild(trades[trades.length - 1]);
+            }
+            
+            // Create new trade
+            const newTrade = document.createElement('tr');
+            
+            // Determine trade type and prices
+            const tradeType = Math.random() > 0.5 ? 'Long' : 'Short';
+            
+            let assetName, entryPrice, exitPrice;
+            
+            switch (market) {
+                case 'btc':
+                    assetName = 'BTC/USD';
+                    entryPrice = (36000 + Math.random() * 1000).toFixed(2);
+                    exitPrice = (parseFloat(entryPrice) + (Math.random() * 500 * (tradeType === 'Long' ? 1 : -1))).toFixed(2);
+                    break;
+                case 'eth':
+                    assetName = 'ETH/USD';
+                    entryPrice = (2300 + Math.random() * 100).toFixed(2);
+                    exitPrice = (parseFloat(entryPrice) + (Math.random() * 50 * (tradeType === 'Long' ? 1 : -1))).toFixed(2);
+                    break;
+                case 'sol':
+                    assetName = 'SOL/USD';
+                    entryPrice = (150 + Math.random() * 10).toFixed(2);
+                    exitPrice = (parseFloat(entryPrice) + (Math.random() * 5 * (tradeType === 'Long' ? 1 : -1))).toFixed(2);
+                    break;
+                case 'aapl':
+                    assetName = 'AAPL';
+                    entryPrice = (175 + Math.random() * 5).toFixed(2);
+                    exitPrice = (parseFloat(entryPrice) + (Math.random() * 2 * (tradeType === 'Long' ? 1 : -1))).toFixed(2);
+                    break;
+                default:
+                    assetName = 'BTC/USD';
+                    entryPrice = (36000 + Math.random() * 1000).toFixed(2);
+                    exitPrice = (parseFloat(entryPrice) + (Math.random() * 500 * (tradeType === 'Long' ? 1 : -1))).toFixed(2);
+            }
+            
+            // Calculate profit/loss percentage
+            const pl = tradeType === 'Long' ? 
+                (exitPrice - entryPrice) / entryPrice * 100 : 
+                (entryPrice - exitPrice) / entryPrice * 100;
+            
+            const plFormatted = pl.toFixed(2);
+            const plClass = parseFloat(plFormatted) >= 0 ? 'text-green-400' : 'text-red-400';
+            const plPrefix = parseFloat(plFormatted) >= 0 ? '+' : '';
+            
+            // Set trade time
+            const timeAgo = Math.floor(Math.random() * 3) + 1;
+            const timeUnit = Math.random() > 0.5 ? 'hour' : 'minute';
+            
+            newTrade.innerHTML = `
+                <td class="py-3 px-4">${assetName}</td>
+                <td class="py-3 px-4">${tradeType}</td>
+                <td class="py-3 px-4">$${entryPrice}</td>
+                <td class="py-3 px-4">$${exitPrice}</td>
+                <td class="py-3 px-4 ${plClass}">${plPrefix}${plFormatted}%</td>
+                <td class="py-3 px-4">${timeAgo} ${timeUnit}${timeAgo > 1 ? 's' : ''} ago</td>
+            `;
+            
+            // Add to top of list
+            tradesList.insertBefore(newTrade, tradesList.firstChild);
+        }
+
+        // Initialize backtest chart
+        function initBacktestChart() {
+            if (!document.getElementById('backtestChart')) return;
+            
+            document.getElementById('backtestChart').innerHTML = '';
+            const backtestCtx = document.createElement('canvas');
+            document.getElementById('backtestChart').appendChild(backtestCtx);
+            
+            // Generate strategy and benchmark data
+            const strategyData = generateBacktestData(10000, 0.01, 0.7);
+            const benchmarkData = generateBacktestData(10000, 0.005, 0.6);
+            
+            // Calculate metrics
+            const finalStrategyValue = strategyData[strategyData.length - 1];
+            const totalReturn = ((finalStrategyValue - 10000) / 10000 * 100).toFixed(1);
+            const winRate = (Math.random() * 30 + 55).toFixed(0);
+            const maxDrawdown = (Math.random() * 10).toFixed(1);
+            const sharpeRatio = (Math.random() * 2 + 1).toFixed(1);
+            
+            // Update metrics display
+            document.getElementById('backtestReturn').textContent = `+${totalReturn}%`;
+            document.getElementById('backtestWinRate').textContent = `${winRate}%`;
+            document.getElementById('backtestDrawdown').textContent = `-${maxDrawdown}%`;
+            document.getElementById('backtestSharpe').textContent = sharpeRatio;
+            
+            // Create chart
+            new Chart(backtestCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: strategyData.length}, (_, i) => i),
+                    datasets: [{
+                        label: 'Strategy',
+                        data: strategyData,
+                        borderColor: 'rgba(147, 51, 234, 1)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Benchmark',
+                        data: benchmarkData,
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function generateBacktestData(startValue, volatility, winProbability) {
+            const data = [];
+            let currentValue = startValue;
+            
+            for (let i = 0; i < 30; i++) {
+                const isWin = Math.random() < winProbability;
+                const changeDirection = isWin ? 1 : -1;
+                const changeMagnitude = currentValue * volatility * (Math.random() + 0.5);
+                currentValue += changeMagnitude * changeDirection;
+                data.push(currentValue);
+            }
+            
+            return data;
+        }
+        
+        // Initialize puzzle chart
+        function initPuzzleChart() {
+            const puzzleChartContainer = document.getElementById('puzzleChart');
+            if (!puzzleChartContainer) return;
+            
+            puzzleChartContainer.innerHTML = '';
+            const puzzleCtx = document.createElement('canvas');
+            puzzleChartContainer.appendChild(puzzleCtx);
+            
+            // Get data for current puzzle
+            const pattern = puzzlePatterns[currentPuzzle];
+            const data = pattern.data;
+            
+            // Create chart
+            new Chart(puzzleCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: data.length}, (_, i) => i),
+                    datasets: [{
+                        label: 'Price',
+                        data: data,
+                        borderColor: 'rgba(147, 51, 234, 1)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Backtest functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up backtest button
+            const backtestBtn = document.getElementById('runBacktestBtn');
+            if (backtestBtn) {
+                backtestBtn.addEventListener('click', function() {
+                    const backtestResults = document.getElementById('backtestResults');
+                    const backtestLoading = document.getElementById('backtestLoading');
+                    
+                    // Show loading first
+                    backtestResults.classList.remove('hidden');
+                    backtestLoading.classList.remove('hidden');
+                    
+                    // Hide results data
+                    document.querySelectorAll('#backtestResults > div:not(#backtestLoading)').forEach(el => {
+                        el.style.opacity = '0.3';
+                    });
+                    
+                    // Simulate loading
+                    setTimeout(() => {
+                        backtestLoading.classList.add('hidden');
+                        document.querySelectorAll('#backtestResults > div').forEach(el => {
+                            el.style.opacity = '1';
+                        });
+                        initBacktestChart();
+                    }, 2000);
+                });
+            }
+        });
+
+        // Notification function
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 glass-dark p-4 rounded-lg z-50 notification';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="bi bi-check-circle-fill text-green-400 mr-3 text-xl"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            // Add to document
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+                notification.style.opacity = '1';
+            }, 10);
+            
+            // Remove after delay
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize the app
+        window.onload = function() {
+            // Start on landing page
+            showSection('landing');
+        };
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
